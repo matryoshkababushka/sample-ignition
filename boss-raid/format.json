@@ -1,0 +1,88 @@
+{
+  "ignition": {
+    "version": "3.0.0"
+  },
+  "passwd": {
+    "users": [
+      {
+        "groups": [
+          "docker",
+          "sudo"
+        ],
+        "name": "core",
+        "sshAuthorizedKeys": [
+          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCdvafmuCw/NeEpf2unGHDqxfbgCMX5gTrhSFu7BoSqZs7L1em/QsBOpD/PlxJOoPwrPllud90TftcXbseW9mAtjVWBjXJtW8mjhU2u3N3G63rF0f0rT5NWFlsqjdTDCYJ279fkQhC8CHqGXfcBNT5ZuiS1qqzX+qcFMVFEquiVv5+IQHbycUxCYLz6pqy2cDO++PczhTFLjcE5E+qckEy3SE2fF1BjaNskdn2Pd0EJdptxe5FuKg+wfhcag333uto4P/6s7sXk4GBuWFzmt3KFTLcqcyf93UDfWmSO4r2eeKkTSwA2duThqUtyg70FvZIlW0/SV3aUvLZwTtyGwPL5 boss"
+        ],
+        "passwordHash": "$5$GtBWSkWP1g5LhurQ$JjymKu1wkxdYLNzElLNPIvkpZADEti.mJJsD/anie43"
+      }
+    ]
+  },
+  "storage": {
+    "disks": [
+      {
+        "device": "/dev/sda",
+        "wipeTable": true,
+        "partitions": [
+          {
+            "label": "root1",
+            "typeGuid": "be9067b9-ea49-4f15-b4f6-f36f8c9e1818"
+          }
+        ]
+      },
+      {
+        "device": "/dev/sdb",
+        "wipeTable": true,
+        "partitions": [
+          {
+            "label": "root2",
+            "typeGuid": "be9067b9-ea49-4f15-b4f6-f36f8c9e1818"
+          }
+        ]
+      }
+    ],
+    "raid": [
+      {
+        "devices": [
+          "/dev/sda1",
+          "/dev/sdb1"
+        ],
+        "level": "raid1",
+        "name": "root_array"
+      }
+    ],
+    "filesystems": [{
+      "device": "/dev/md/root_array",
+      "path": "/var/lib/docker/volumes",
+      "format": "ext4",
+      "label": "DATA",
+      "wipeFilesystem": true
+    }],
+    "files": [
+      {
+        "path": "/etc/hostname",
+        "mode": 420,
+        "contents": {
+          "source": "data:,boss"
+        }
+      },
+      {
+        "group": {},
+        "path": "/etc/sysctl.d/nf-01.conf",
+        "user": {},
+        "mode": 420,
+        "contents": {
+          "source": "data:,net.netfilter.nf_conntrack_max%3D131072%5Cnvm.max_map_count%3D262144"
+        }
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nBefore=docker.service\n[Mount]\nWhere=/var/lib/docker/volumes\nWhat=/dev/md/root_array\n[Install]\nWantedBy=multi-user.target",
+        "enabled": true,
+        "name": "var-lib-docker-volumes.mount"
+      }
+    ]
+  }
+}
